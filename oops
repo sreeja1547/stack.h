@@ -1,0 +1,98 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+using namespace std;
+
+// ------------------ Abstract Class (Abstraction) ------------------
+class Person {
+protected:
+    string name;
+    int age;
+public:
+    Person(string n = "", int a = 0) : name(n), age(a) {}
+    virtual void display() const = 0; // Pure virtual function
+    virtual ~Person() {}
+};
+
+// ------------------ Base Class ------------------
+class Employee : public Person {
+protected:
+    int empID;
+    double salary;
+    static int empCount; // Static member
+
+public:
+    Employee(string n = "", int a = 0, int id = 0, double s = 0.0)
+        : Person(n, a), empID(id), salary(s) { empCount++; }
+
+    virtual void display() const override {
+        cout << "Employee ID: " << empID << "\nName: " << name
+             << "\nAge: " << age << "\nSalary: " << salary << endl;
+    }
+
+    // Encapsulation: setters and getters
+    void setSalary(double s) { salary = s; }
+    double getSalary() const { return salary; }
+
+    static void showCount() {
+        cout << "Total Employees: " << empCount << endl;
+    }
+
+    // Operator Overloading
+    bool operator > (const Employee &e) const {
+        return salary > e.salary;
+    }
+
+    // Friend Function
+    friend void saveToFile(const Employee &e);
+
+    virtual ~Employee() {}
+};
+
+int Employee::empCount = 0;
+
+// ------------------ Derived Class (Inheritance & Polymorphism) ------------------
+class Manager : public Employee {
+    double bonus;
+public:
+    Manager(string n = "", int a = 0, int id = 0, double s = 0.0, double b = 0.0)
+        : Employee(n, a, id, s), bonus(b) {}
+
+    void display() const override {
+        cout << "\n--- Manager Details ---\n";
+        Employee::display();
+        cout << "Bonus: " << bonus << "\nTotal Salary: " << salary + bonus << endl;
+    }
+};
+
+// ------------------ Friend Function Implementation ------------------
+void saveToFile(const Employee &e) {
+    ofstream file("employee_data.txt", ios::app);
+    file << e.empID << " " << e.name << " " << e.age << " " << e.salary << "\n";
+    file.close();
+}
+
+// ------------------ Main Function ------------------
+int main() {
+    Manager m1("Alice", 35, 101, 80000, 10000);
+    Manager m2("Bob", 40, 102, 85000, 12000);
+
+    m1.display();
+    m2.display();
+
+    Employee::showCount();
+
+    // Compare salaries using operator overloading
+    if (m1 > m2)
+        cout << "\n" << m1.name << " has a higher salary than " << m2.name << endl;
+    else
+        cout << "\n" << m2.name << " has a higher salary than " << m1.name << endl;
+
+    // Save to file
+    saveToFile(m1);
+    saveToFile(m2);
+
+    cout << "\nEmployee details saved to 'employee_data.txt'.\n";
+
+    return 0;
+}
